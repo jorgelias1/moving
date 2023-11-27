@@ -316,7 +316,19 @@ h2{
 .flipped{
   transform: scaleX(-1);
 }
-.carouselContainer{
+form{
+  background-color: white;
+  padding: 0.5rem;
+  border-radius: 1rem;
+}
+form input{
+  padding:0.5rem;
+  background: white;
+  color: black;
+  border-radius: 0.5rem;
+  border:2px solid black;
+}
+.carouselParent{
   background: rgb(255,255,255,0.1);
   border-radius: 1rem;
   display: flex;
@@ -326,14 +338,25 @@ h2{
   margin: -1rem 1rem 0 1rem;
   box-shadow: 0 0 10px white, 2px 0 0px white, -2px 0 0 white;
 }
+.carouselContainer{
+
+}
 .carouselImage{
+}
+.mainCard:not(:nth-child(2)) img{
+  height: 9vw;
+  width: 15vw;
+}
+.mainCard:nth-child(2) img{
+  height: 18vw;
+  width: 30vw;
 }
 .mainCard div:nth-child(2){
   font-size: large;
   font-weight: 900;
   padding-bottom: 1rem;
 }
-.mainCard:nth-child(odd){
+.mainCard:not(:nth-child(2)){
   width: 13vw;
   height:9vw;
 }
@@ -356,10 +379,11 @@ h2{
   width: 0.4rem;
   background:white;
 }
-.carouselContainer .flexH, .description{
+.carouselParent .flexH, .description{
   background: rgb(255,255,255,0.1);
   border-radius: 1rem;
 }
+
 @keyframes car{
   0% {
     transform: translateY(1rem);
@@ -388,12 +412,25 @@ h2{
 }
 
 ol{
-  border: 2px solid #6b8df3;
+  padding: 0;
 }
 ol li{
   background: white;
   color: black;
-  border-bottom: 2px solid grey;
+  list-style-type: none;
+}
+form ol{
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+ol.select{
+  display: flex;
+  flex-direction: row;
+  justify-content: space-evenly;
+}
+.select li{
+  background: ;
 }
 .review{
   border: 2px solid white;

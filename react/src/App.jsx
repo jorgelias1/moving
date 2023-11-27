@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom'
 import { useNavigate, useLocation } from 'react-router-dom'
 import svg from './assets/bitmap.svg'
@@ -12,6 +12,9 @@ import truck from '../../../../Desktop/untitled2-c.png'
 import junk from '../../../../Desktop/junk1-c.png'
 import assembly from '../../../../Desktop/tools-c.png'
 import underline from '../../../../Desktop/underline.svg'
+import PlacesAutocomplete from 'react-places-autocomplete'
+import flatpickr from 'flatpickr';
+import 'flatpickr/dist/flatpickr.min.css';
 
 import './App.css'
 import {Nav, Arrow} from './components/svg'
@@ -60,24 +63,103 @@ const Layout=({children})=>{
     </div>
   )
 }
+const DateInput = ({date, setDate}) => {
+  const dateInputRef = useRef(null);
+  let today = new Date();
+  today = new Date(today.getTime() - 8*60 * 60 * 1000)
+  today = today.toISOString().slice(0,10);
+  
+  useEffect(() => {
+    flatpickr(dateInputRef.current, {
+      disable: [{ from: '1900-01-01', to: today}, '2023-12-24', '2023-12-25', '2024-01-01'], 
+      dateFormat: 'Y-m-d',
+    });
+  }, []);
+
+  return (
+    <input
+      type="text"
+      placeholder="Select a date"
+      ref={dateInputRef}
+      onInput={()=>setDate(dateInputRef.current.value)}
+    />
+  );
+};
 const PricingPage=()=>{
+  const [address, setAddress] = useState('');
+  const [service, setService] = useState(null);
+  const [date, setDate] = useState('');
+  const [name, setName] = useState('');
+  const [phone, setPhone] = useState('');
+  const [total, setTotal] = useState(0);
+  const handleSubmit=(e)=>{
+    e.preventDefault();
+    console.log(address, service, date, name, phone, total)
+  }
+  useEffect(()=>{
+    window.scrollTo(0,0)
+  },[])
   return(
     <form>
       <ol>
         <li>
-          <label>enter address<input type='text'/></label>
+          <label>
+            select a service
+            <SelectOptions/>
+          </label>
         </li>
         <li>
-          <label>select a service<input type='text'/></label>
+          <label>
+            enter address
+            <Address setAddress={setAddress} address={address}/>
+          </label>
         </li>
-        <li>choose a date</li>
+        <li>
+          <label>
+            choose a date
+            <DateInput date={date} setDate={setDate}/>
+          </label>
+        </li>
         {/* backend call to see which dates/times are available */}
-        <li>contact info</li>
+        <li>
+          <fieldset>
+            <legend>contact info</legend>
+            <label>Name: <input type='text' autoComplete='off' value={name} onChange={(e)=>setName(e.target.value)} required/></label>
+            <br/>
+            <label>Phone Number: <input type='tel' value={phone} onChange={(e)=>setPhone(e.target.value)}required/></label>
+          </fieldset>
+        </li>
         <li>confirm details + payment</li>
-        <li>submit</li>
+        <button type='submit' onClick={handleSubmit}>submit</button>
         <li>running price sticky at bottom</li>
       </ol>
     </form>
+  )
+}
+const Address=({address, setAddress})=>{
+  return(
+    <PlacesAutocomplete value={address} onChange={setAddress} onSelect={(addy)=>setAddress(addy)}>
+      {({ getInputProps, suggestions, getSuggestionItemProps, loading }) => (
+        <div>
+          <label>Enter Address 
+            <input
+              {...getInputProps({
+                placeholder: 'Enter your address',
+                className: 'address-input',
+              })}
+            />
+          </label>
+          <div className="autocomplete-dropdown-container">
+            {loading && <div>Loading...</div>}
+            {suggestions.map((suggestion) => (
+              <div key={suggestion.placeId} {...getSuggestionItemProps(suggestion)}>
+                {suggestion.description}
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+    </PlacesAutocomplete>
   )
 }
 const PricingButton=()=>{
@@ -93,12 +175,30 @@ const PricingButton=()=>{
   )
 }
 const Carousel=()=>{
+  return(
+    <div className='carouselParent'> 
+      <h2>What We Offer</h2> 
+      <p className='description'>We do it all! Whether you need help moving or getting rid of junk, we've got you covered. Check out our most popular options below.</p>
+      <CarouselContainer/>
+      <PricingButton/>
+    </div>
+  )
+}
+const CarouselContainer=()=>{
   const [carouselIndex, setCarouselIndex] = useState(0);
   const carouselItems = [
     {icon: truck, text: 'Moving Services'},
     {icon: junk, text: 'Junk Removal'}, 
     {icon: assembly, text: 'Item Assembly'}
   ];
+  const animate=()=>{
+    const images = document.querySelectorAll('.carouselImage')
+    for (const currentImg of images){
+      currentImg.classList.remove('swipe')
+      currentImg.offsetWidth;
+      currentImg.classList.add('swipe')
+    }
+  }
   const handlePrev=()=>{
     carouselItems[carouselIndex-1]
     ? setCarouselIndex(carouselIndex-1) 
@@ -111,47 +211,49 @@ const Carousel=()=>{
     : setCarouselIndex(0);
     animate()
   }
-  const animate=()=>{
-    const images = document.querySelectorAll('.carouselImage')
-    for (const currentImg of images){
-      currentImg.classList.remove('swipe')
-      currentImg.offsetWidth;
-      currentImg.classList.add('swipe')
-    }
-  }
   return(
-    <div className='carouselContainer'> 
-      <h2>What We Offer</h2> 
-      <p className='description'>We do it all! Whether you need help moving or getting rid of junk, we've got you covered. Check out our most popular options below.</p>
+    <div>
       <div className='flexH'>
-        {/* <div className='icons'><img src={homeSvg} style={{width:'6vw'}}/></div> */}
         <div className='mainCard'>
-          <img src={carouselItems[carouselIndex-1] ? carouselItems[carouselIndex-1].icon : carouselItems[carouselItems.length-1].icon} style={{width:'15vw', height:'9vw'}} className='carouselImage' onClick={handlePrev}/>
+          <img src={carouselItems[carouselIndex-1] ? carouselItems[carouselIndex-1].icon : carouselItems[carouselItems.length-1].icon} className='carouselImage' onClick={handlePrev}/>
         </div>
         <div className='mainCard'>
-          <img src={carouselItems[carouselIndex].icon} style={{width:'30vw', height:'18vw'}} className='carouselImage'/>
+          <img src={carouselItems[carouselIndex].icon} className='carouselImage'/>
           <div>{carouselItems[carouselIndex].text}</div>
         </div>
         <div className='mainCard'>
-          <img src={carouselItems[carouselIndex+1] ? carouselItems[carouselIndex+1].icon : carouselItems[0].icon} style={{width:'15vw', height:'9vw'}} className='carouselImage' onClick={handleNext}/>
+          <img src={carouselItems[carouselIndex+1] ? carouselItems[carouselIndex+1].icon : carouselItems[0].icon} className='carouselImage' onClick={handleNext}/>
         </div>
-        {/* <div className="icons"><img src={recycle} style={{width:'6vw'}}/></div> */}
       </div>
-      <div className="flexH">
-      <button className="nextButton primaryBtn flipped" onClick={handlePrev}>
-        <Arrow/>
-      </button>
-      <ul className='carouselDots'>
-        <li></li>
-        <li></li>
-        <li></li>
-      </ul>
-      <button className="nextButton primaryBtn" onClick={handleNext}>
-        <Arrow/>
-      </button>
+      <div className="flexH" style={{marginTop:'1rem'}}>
+        <button className="nextButton primaryBtn flipped" onClick={handlePrev}>
+          <Arrow/>
+        </button>
+        <ul className='carouselDots'>
+          <li></li>
+          <li></li>
+          <li></li>
+        </ul>
+        <button className="nextButton primaryBtn" onClick={handleNext}>
+          <Arrow/>
+        </button>
       </div>
-      <PricingButton/>
     </div>
+  )
+}
+const SelectOptions=()=>{
+  return(
+    <ol className='select'>
+      <li>
+        <button>moving</button>
+      </li>
+      <li>
+        <button>junk removal</button>
+      </li>
+      <li>
+        <button>other</button>
+      </li>
+    </ol>
   )
 }
 const HomePage=()=>{
