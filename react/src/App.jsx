@@ -15,7 +15,7 @@ import underline from '../../../../Desktop/underline.svg'
 import PlacesAutocomplete from 'react-places-autocomplete'
 import flatpickr from 'flatpickr';
 import 'flatpickr/dist/flatpickr.min.css';
-
+import services from './functions/frontRequests'
 import './App.css'
 import {Nav, Arrow} from './components/svg'
 
@@ -64,16 +64,20 @@ const Layout=({children})=>{
   )
 }
 const DateInput = ({date, setDate}) => {
+  // const [disabledDates, setDisabledDates] = useState([]);
   const dateInputRef = useRef(null);
   let today = new Date();
   today = new Date(today.getTime() - 8*60 * 60 * 1000)
   today = today.toISOString().slice(0,10);
   
   useEffect(() => {
-    flatpickr(dateInputRef.current, {
-      disable: [{ from: '1900-01-01', to: today}, '2023-12-24', '2023-12-25', '2024-01-01'], 
-      dateFormat: 'Y-m-d',
-    });
+    services.getDates().then(re=>{
+      const dates = re.data.map(date=>date.date)
+      flatpickr(dateInputRef.current, {
+        disable: [{ from: '1900-01-01', to: today}, '2023-12-24', '2023-12-25', '2024-01-01', ...dates], 
+        dateFormat: 'Y-m-d',
+      });
+    })
   }, []);
 
   return (
@@ -85,16 +89,64 @@ const DateInput = ({date, setDate}) => {
     />
   );
 };
+const EmployeeForm=()=>{
+
+}
+const EmployeePage=()=>{
+
+}
+const SchedulePage=()=>{
+  const [appts, setAppts]=useState([]);
+  const columns=['date', 'time', 'name', 'phone', 'service', 'address', 'destination'];
+  useEffect(()=>{
+    services.cleanSchedule().then(()=>{
+      services.getSchedule().then(re=>{
+        setAppts(re.data.rows)
+      })
+    })
+  }, []);
+  return(
+    <div className='scrollTable'>
+      <table>
+        <thead>
+          <tr>
+            {columns.map((column, i)=>(
+              <th key={i}>{column}</th>
+            ))}
+          </tr>
+        </thead>
+        <tbody>
+          {appts.map((appt, i)=>(
+            <tr key={i}>
+              {columns.map((column, i)=>(
+                <td key={i}>{appt[column]}</td>
+              ))}
+            </tr>
+          ))}
+        </tbody>
+      </table>
+    </div>
+  )
+}
 const PricingPage=()=>{
   const [address, setAddress] = useState('');
+  const [destination, setDestination] = useState('');
+  const [distance, setDistance] = useState('');
   const [service, setService] = useState(null);
   const [date, setDate] = useState('');
   const [name, setName] = useState('');
   const [phone, setPhone] = useState('');
+  const [time, setTime] = useState(null);
   const [total, setTotal] = useState(0);
-  const handleSubmit=(e)=>{
+  const [moving, setMoving] = useState(null);
+  const [email, setEmail] = useState('');
+  const [junk, setJunk] = useState(null);
+  const [misc, setMisc] = useState(null);
+
+  const handleSubmit=async(e)=>{
     e.preventDefault();
-    console.log(address, service, date, name, phone, total)
+    // await services.postMessage();
+    await services.addToSchedule({address, service, date, name, phone, email, time, destination});
   }
   useEffect(()=>{
     window.scrollTo(0,0)
@@ -105,7 +157,7 @@ const PricingPage=()=>{
         <li>
           <label>
             select a service
-            <SelectOptions/>
+            <SelectOptions setMoving={setMoving} setJunk={setJunk} setMisc={setMisc}/>
           </label>
         </li>
         <li>
@@ -114,10 +166,22 @@ const PricingPage=()=>{
             <Address setAddress={setAddress} address={address}/>
           </label>
         </li>
+        {moving && <li>
+          <label>
+            enter destination
+            <Address setAddress={setDestination} address={destination} setDistance={setDistance} origin={address}/>
+          </label>
+        </li>}
         <li>
           <label>
             choose a date
             <DateInput date={date} setDate={setDate}/>
+          </label>
+        </li>
+        <li>
+          <label>
+            select a time
+            <input type='time'/>
           </label>
         </li>
         {/* backend call to see which dates/times are available */}
@@ -127,6 +191,8 @@ const PricingPage=()=>{
             <label>Name: <input type='text' autoComplete='off' value={name} onChange={(e)=>setName(e.target.value)} required/></label>
             <br/>
             <label>Phone Number: <input type='tel' value={phone} onChange={(e)=>setPhone(e.target.value)}required/></label>
+            <br/>
+            <label>Email: <input type='email' value={email} onChange={(e)=>setEmail(e.target.value)}required/></label>
           </fieldset>
         </li>
         <li>confirm details + payment</li>
@@ -136,19 +202,25 @@ const PricingPage=()=>{
     </form>
   )
 }
-const Address=({address, setAddress})=>{
+const Address=({address, setAddress, setDistance, origin})=>{
+  const handleSelect=async(addy)=>{
+    setAddress(addy);
+    // if this is the destination input
+    if (setDistance){
+      const re = await services.calcDistance(origin, addy);
+      setDistance(re.data.rows[0].elements[0].distance.text);
+    }
+  }
   return(
-    <PlacesAutocomplete value={address} onChange={setAddress} onSelect={(addy)=>setAddress(addy)}>
+    <PlacesAutocomplete value={address} onChange={setAddress} onSelect={handleSelect}>
       {({ getInputProps, suggestions, getSuggestionItemProps, loading }) => (
         <div>
-          <label>Enter Address 
             <input
               {...getInputProps({
                 placeholder: 'Enter your address',
                 className: 'address-input',
               })}
             />
-          </label>
           <div className="autocomplete-dropdown-container">
             {loading && <div>Loading...</div>}
             {suggestions.map((suggestion) => (
@@ -241,17 +313,17 @@ const CarouselContainer=()=>{
     </div>
   )
 }
-const SelectOptions=()=>{
+const SelectOptions=({setMoving, setJunk, setMisc})=>{
   return(
     <ol className='select'>
       <li>
-        <button>moving</button>
+        <button onClick={()=>setMoving(true)}>moving</button>
       </li>
       <li>
-        <button>junk removal</button>
+        <button onClick={()=>setJunk(true)}>junk removal</button>
       </li>
       <li>
-        <button>other</button>
+        <button onClick={()=>setMisc(true)}>other</button>
       </li>
     </ol>
   )
@@ -283,6 +355,7 @@ function App() {
       <Layout>
         <Routes>
           <Route path='/' element={<HomePage/>} />
+          <Route path='/sched' element={<SchedulePage/>} />
           <Route path='/pricing' element={<PricingPage/>} />
         </Routes>
       </Layout>
