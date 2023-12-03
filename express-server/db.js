@@ -45,6 +45,23 @@ const getDates=async()=>{
     const re = await pool.query(query) 
     return re;
 }
+const postQuestion=async(number, question)=>{
+    const query=
+    `INSERT INTO questions (number, question)
+    VALUES ($1, $2)`
+    await pool.query(query, [number, question]);
+}
+const postAppt=async(location, service, pay)=>{
+    const query=
+    `INSERT INTO past_appts (location, service, pay)
+    VALUES ($1, $2, $3)`
+    await pool.query(query, [location, service, pay]);
+}
+const getAppt=async()=>{
+    const query='SELECT * FROM past_appts'
+    const re = await pool.query(query);
+    return re;
+}
 // const addUser=async()=>{
 
 // }
@@ -54,4 +71,7 @@ module.exports = {
     addToSchedule,
     cleanSchedule,
     getDates,
+    postQuestion,
+    postAppt,
+    getAppt,
 }

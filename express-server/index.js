@@ -24,11 +24,11 @@ app.post('/api/distance', async(request, response)=>{
     const re = await service.calcDistance(obj.A, obj.B);
     response.send(re.data)
 })
-app.get('/api/posted', async(request, response)=>{
+app.post('/api/posted', async(request, response)=>{
     const sns = new AWS.SNS();
-
+    const {content} = request.body;
     const params = {
-      Message: 'Someone just submitted a request!',
+      Message: content,
       TopicArn: 'arn:aws:sns:us-west-1:086519842133:Moving',
     };
     
@@ -37,8 +37,9 @@ app.get('/api/posted', async(request, response)=>{
         console.error('Error publishing message to SNS:', err);
       } else {
         console.log('Message published successfully:', data.MessageId);
+        response.send('success')    
       }
-    });    
+    });
 })
 app.get('/api/schedule', async(request, response)=>{
     try{ 
@@ -71,6 +72,32 @@ app.get('/api/dates', async(request, response)=>{
         response.send(re.rows)
     } catch(err){
         console.log(err)
+    }
+})
+app.post('/api/question', async(request, response)=>{
+    try{
+        const obj=request.body;
+        await db.postQuestion(obj.number, obj.question);
+        response.send('success!')
+    } catch(err){
+        console.log(err);
+    }
+})
+app.post('/api/appt', async(request, response)=>{
+    try{
+        const obj=request.body;
+        await db.postAppt(obj.location, obj.service, obj.pay);
+        response.send('success')
+    } catch(err){
+        console.log(err)
+    }
+})
+app.get('/api/appt', async(request, response)=>{
+    try{
+        const re = await db.getAppt();
+        response.send(re.data)
+    } catch(err){
+        console.log(err);
     }
 })
 const PORT = 3001

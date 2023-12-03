@@ -4,8 +4,11 @@ const baseUrl = 'http://localhost:3001'
 const calcDistance=(A, B)=>{
     return axios.post(`${baseUrl}/api/distance`, {A, B})
 }
-const postMessage=()=>{
-    return axios.get(`${baseUrl}/api/posted`)
+const postMessage=(content)=>{
+    return axios.post(`${baseUrl}/api/posted`, {content})
+}
+const postQuestion=(number, question)=>{
+    return axios.post(`${baseUrl}/api/question`, {number, question})
 }
 const addToSchedule=(appt)=>{
     return axios.post(`${baseUrl}/api/schedule`, {appt})
@@ -19,6 +22,12 @@ const getDates=()=>{
 const cleanSchedule=()=>{
     return axios.delete(`${baseUrl}/api/schedule`)
 }
+const addPastAppt=(location, service, pay)=>{
+    return axios.post(`${baseUrl}/api/appt`, {location, service, pay})
+}
+const getPastAppts=()=>{
+    return axios.get(`${baseUrl}/api/appt`)
+}
 export default{
     calcDistance,
     postMessage,
@@ -26,4 +35,7 @@ export default{
     getSchedule,
     cleanSchedule,
     getDates,
+    postQuestion,
+    addPastAppt,
+    getPastAppts,
 }
