@@ -6,18 +6,17 @@ import toolSvg from './assets/tools.svg'
 // import homeSvg from './assets/home.svg'
 import google from './assets/google.jpeg'
 import rating from './assets/rating.jpeg'
-import homeSvg from '../../../../Desktop/sOl2Zg01.svg'
-import recycle from '../../../../Desktop/re.svg'
-import truck from '../../../../Desktop/untitled2-c.png'
-import junkIcon from '../../../../Desktop/junk1-c.png'
-import assembly from '../../../../Desktop/tools-c.png'
-import underline from '../../../../Desktop/underline.svg'
+import truck from '../../../Desktop/untitled2-c.png'
+import junkIcon from '../../../Desktop/junk1-c.png'
+import assembly from '../../../Desktop/tools-c.png'
+import underline from '../../../Desktop/underline.svg'
 import PlacesAutocomplete from 'react-places-autocomplete'
 import flatpickr from 'flatpickr';
 import 'flatpickr/dist/flatpickr.min.css';
 import services from './functions/frontRequests'
 import './App.css'
 import {Nav, Arrow} from './components/svg'
+import mainGuy from '../../../Desktop/young-happy-manual-worker-carrying-cardboard-boxes-delivery-van-while-communicating-with-his-colleagues.jpg'
 import {SignUpForm, LoginForm} from './components/sign-up'
 import { getCurrentUser, signUp, signIn, confirmSignUp, resendSignUpCode, resetPassword, confirmResetPassword } from '@aws-amplify/auth'
 
@@ -47,6 +46,8 @@ export const Sidebar=()=>{
 }
 const Layout=({children})=>{
   const [sidebar, showSidebar] = useState(false)
+  const [msgForm, showMsgForm] = useState(false);
+  const [success, setSuccess] = useState(false);
 
   useEffect(() => {
     window.scrollTo(0, 0); 
@@ -57,10 +58,14 @@ const Layout=({children})=>{
       <div className={`sidebar ${!sidebar ? 'slide' : ''}`}>
         {sidebar && <Sidebar />}
       </div>
-      {/* <Nav /> */}
-        <div className='all'>
-          {children}
-        </div>
+      <div className='all' onClick={()=>showMsgForm(false)}>
+        {children}
+      </div>
+      <div className='questionContainer'>
+        {!msgForm
+        ? <GotAQuestion showMsgForm={showMsgForm}/>
+        : <MsgForm showMsgForm={showMsgForm} setSuccess={setSuccess}/>}
+      </div>
     </div>
   )
 }
@@ -98,7 +103,7 @@ const EmployeePage=()=>{
 }
 const AdminPage=()=>{
   const [signIn, showSignIn] = useState(false);
-
+  const [questions, setQuestions] = useState([]);
   const checkUser=async()=>{
     try{
       const re = await getCurrentUser();
@@ -110,6 +115,9 @@ const AdminPage=()=>{
   }
   useEffect(()=>{
     checkUser();
+    services.getQuestions().then(re=>{
+      re.data.rows && setQuestions(re.data.rows);
+    })
   }, [])
   return(
     <>
@@ -118,8 +126,33 @@ const AdminPage=()=>{
       : <div className='all'>
           <ScheduleTable/>
           <PastAppts/>
+          <QuestionTable questions={questions} />
         </div>}
     </>
+  )
+}
+const QuestionTable=({questions})=>{
+  return(
+    <div className='scrollTable'>
+      <table>
+        <thead>
+          <tr>
+            <th>question</th>
+            <th>phone number</th>
+            <th></th>
+          </tr>
+        </thead>
+        <tbody>
+          {questions.map((question, i)=>{
+            <tr key={i}>
+              <td>{question.question}</td>
+              <td>{question.number}</td>
+              <td onClick={()=>services.removeQuestion(question)}><button>remove</button></td>
+            </tr>
+          })}
+        </tbody>
+      </table>
+    </div>
   )
 }
 const PastAppts=()=>{
@@ -253,8 +286,9 @@ const MsgForm=({showMsgForm, setSuccess})=>{
   }
 
   return(
-    <form>
-      We'll get back to you as soon as possible!
+    <form className='question'>
+      <div className='flexLeft' onClick={()=>showMsgForm(false)}>x</div>
+      <div>We'll get back to you as soon as possible!</div>
       <label>
         Phone Number:
         <input className={err1 ? 'error' : ''} type='tel' placeholder='enter phone number' onChange={(e)=>{setPhone(e.target.value); setErr1(false)}} value={phone}/>
@@ -265,7 +299,7 @@ const MsgForm=({showMsgForm, setSuccess})=>{
         <textarea className={err2 ? 'error' : ''} type='text' placeholder='ask anything!' onChange={(e)=>{setQuestion(e.target.value); setErr2(false)}} value={question}/>
         {err2 && 'please do not leave this empty'}
       </label>
-      <button type='submit' onClick={handleSubmit}>submit</button>
+      <button type='submit' onClick={handleSubmit} style={{textAlign:'center'}}>submit</button>
     </form>
   )
 }
@@ -286,7 +320,6 @@ const PricingPage=()=>{
   const [medQty, setMedQty] = useState(0);
   const [lgQty, setLgQty] = useState(0);
   const [section, setSection] = useState(0);
-  const [msgForm, showMsgForm] = useState(false);
   const [success, setSuccess] = useState(false);
   const [err1, setErr1] = useState(false);
   const [city, setCity] = useState('');
@@ -385,10 +418,21 @@ const PricingPage=()=>{
           </FormSection>}
         </ol>
       </form>
-      {!msgForm 
-      ? <GotAQuestion showMsgForm={showMsgForm}/>
-      : <MsgForm showMsgForm={showMsgForm} setSuccess={setSuccess}/>}
       {success && <Message msg={'Thank you for your message!'} type={'success'}/>}
+    </div>
+  )
+}
+const SelectCard=({children, img, pricing})=>{
+  return(
+    <div className='selectCard'>
+      <div>
+        <div className='selectTitle'>
+          {children}
+        </div>
+        <div>Order Now</div>
+        <div className='price'>{pricing}</div>
+      </div>
+      <img src={img}/>
     </div>
   )
 }
@@ -408,8 +452,6 @@ const SelectOptions=({setMoving, setJunk, setMisc, setSection, section, junk, me
     setJunk(true);
     setMoving(false);
     setMisc(false);
-    !(medQty<1 && lgQty<1) ? setSection(section+1)
-    : setErr1(true);
     setService('Junk Removal')
   }
   const handleMisc=(e)=>{
@@ -440,36 +482,52 @@ const SelectOptions=({setMoving, setJunk, setMisc, setSection, section, junk, me
     <div>
       <ol className='select'>
       <li onClick={handleMoving}>
-          <img src={truck}/>
-          <div>moving service</div>
-          <div>$100 + $3.25/mile + $100/hr</div>
+          <SelectCard img={truck} pricing={'$100 + $3.25/mile + $100/hr'}>
+            <div className='flexH'>
+              <div style={{fontSize:'1.8rem', transform:'translateY(-0.13rem)'}}>m</div>oving
+            </div>
+            <div className='flexH'>service</div>
+          </SelectCard>
         </li>
-        <li>
-          <img src={junkIcon}/>
-          <div>junk removal</div>
-          {junk && <div>
-            <div>medium item (50-100 lbs or largest side less than 48"): $100 
-              <button onClick={addMed}>+</button> 
-              <button onClick={subMed}>-</button>
-              ({medQty})
-              </div>
-            <div>large item (100-150 lbs or largest side less than 96"): $200 
-              <button onClick={addLg}>+</button>
-              <button onClick={subLg}>-</button>
-              ({lgQty})
-              </div>
-          </div>}
-          {err1 && <Message msg={'please enter desired quantity'} type={'success'}/>}
-          <button onClick={handleJunk}>select items</button>
+        <li onClick={handleJunk}>
+          <SelectCard img={junkIcon} pricing={junk && <JunkPricing addMed={addMed} subMed={subMed} addLg={addLg} subLg={subLg} medQty={medQty} lgQty={lgQty} setSection={setSection} section={section}/>}>
+            <div>
+              <div>junk removal</div>
+            </div>
+          </SelectCard>
         </li>
         <li onClick={handleMisc}>
-          <img src={assembly}/>
-          <div>Assembly/Misc</div>
-          <div>$50 + $150/hr</div>
+          <SelectCard img={assembly} pricing={'$50 + $150/hr'}>
+            <div>
+              <div>Assembly/ Misc</div>
+            </div>
+          </SelectCard>
         </li>
       </ol>
       <div className='pricing'>
       </div>
+    </div>
+  )
+}
+const JunkPricing=({addMed, subMed, addLg, subLg, medQty, lgQty, setSection, section})=>{
+  const handleSubmit=(e)=>{
+    e.preventDefault();
+    !(medQty<1 && lgQty<1) && setSection(section+1);
+  }
+  return(
+    <div>
+      {<div className='success'>Please Select Qty of Items</div>}
+      <div>medium item (50-100 lbs or largest side less than 48"): $100
+        <button onClick={addMed}>+</button>
+        <button onClick={subMed}>-</button>
+        ({medQty})
+        </div>
+      <div>large item (100-150 lbs or largest side less than 96"): $200
+        <button onClick={addLg}>+</button>
+        <button onClick={subLg}>-</button>
+        ({lgQty})
+      </div>
+      <button className='submit' onClick={handleSubmit}>submit</button>
     </div>
   )
 }
@@ -538,22 +596,26 @@ const Address=({address, setAddress, setDistance, origin, setCity})=>{
 const PricingButton=()=>{
   const navigate = useNavigate();
   return(
-    <div style={{display:'flex', justifyContent:'center'}}>
-      <button onClick={()=>navigate('/pricing')} className='primaryBtn'>
-        <div className='buttonContents'>
-          Instant Pricing <Arrow/>
-        </div>
-      </button>
+    <div style={{display:'flex', flexDirection:'column'}}>
+      <div style={{display:'flex', justifyContent:'center'}}>
+        <button onClick={()=>navigate('/pricing')} className='primaryBtn'>
+          <div className='buttonContents'>
+            Instant Pricing <div className='arr'><Arrow/></div>
+          </div>
+        </button>
+      </div>
+      <span className="material-symbols-outlined">
+        verified_user
+        <span>fully insured</span>
+      </span>
     </div>
   )
 }
 const Carousel=()=>{
   return(
     <div className='carouselParent'> 
-      <h2>What We Offer</h2> 
-      <p className='description'>We do it all! Whether you need help moving or getting rid of junk, we've got you covered. Check out our most popular options below.</p>
+      {/* <h2>What We Offer</h2>  */}
       <CarouselContainer/>
-      <PricingButton/>
     </div>
   )
 }
@@ -592,14 +654,16 @@ const CarouselContainer=()=>{
         </div>
         <div className='mainCard'>
           <img src={carouselItems[carouselIndex].icon} className='carouselImage'/>
-          <div>{carouselItems[carouselIndex].text}</div>
         </div>
         <div className='mainCard'>
           <img src={carouselItems[carouselIndex+1] ? carouselItems[carouselIndex+1].icon : carouselItems[0].icon} className='carouselImage' onClick={handleNext}/>
         </div>
       </div>
+      <div className='flexH imageDesc'>
+        <div>{carouselItems[carouselIndex].text}</div>
+      </div>
       <div className="flexH" style={{marginTop:'1rem'}}>
-        <button className="nextButton primaryBtn flipped" onClick={handlePrev}>
+        <button className="nextButton flipped" onClick={handlePrev}>
           <Arrow/>
         </button>
         <ul className='carouselDots'>
@@ -607,7 +671,7 @@ const CarouselContainer=()=>{
           <li></li>
           <li></li>
         </ul>
-        <button className="nextButton primaryBtn" onClick={handleNext}>
+        <button className="nextButton" onClick={handleNext}>
           <Arrow/>
         </button>
       </div>
@@ -619,17 +683,29 @@ const HomePage=()=>{
     return(
       <div className='all'>
         <div className='mainContainer'>
-          <h1>
-            <span>Let's</span><span>get</span><span>moving</span>!
-          </h1>
-          <img src={underline} style={{maxWidth:'95vw', transform:'scaleY(-0.7)', marginBottom:'-1rem', minWidth:'60vw'}}/>
+          <div className='mainText'>
+            <h1>
+              <span>Let's</span><span>get</span><span>moving</span>!
+            </h1>
+            <p className='description'>We do it all! Whether you need help moving or getting rid of junk, we've got you covered. Check out our most popular options below!</p>
+          </div>
+          <div className="image">
+          </div>
         </div>
-        <Carousel/>
-        <div>reviews</div>
-        <div className="flexH review">
-          <img src={google} style={{width:'20vw', maxWidth:'10rem'}}/>
-          5 stars on google
-          <img src={rating} style={{width:'20vw', maxWidth:'10rem'}}/>
+        <div className='carPrice'>
+          <Carousel/>
+          <PricingButton/>
+        </div>
+        <div className='review'>
+          <div className="flexH">
+            <img src={google} style={{width:'20vw', maxWidth:'10rem'}}/>
+            <div style={{marginRight:'auto', marginTop:'auto', marginBottom:'1rem'}}>
+              <div>Fernanda</div>
+              <img src={rating} style={{width:'20vw', maxWidth:'10rem', marginTop:'-4rem', marginBottom:'-2rem'}}/>
+            </div>
+            <div style={{marginRight:'auto'}}></div>
+          </div>
+          "We had an outstanding experience, very attentive and professional at all times. During our move all of our belongings were very well taken care of. Orbit has earned my trust and will definitely hire them next time"
         </div>
       </div>
     )
