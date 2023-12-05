@@ -100,6 +100,22 @@ app.get('/api/appt', async(request, response)=>{
         console.log(err);
     }
 })
+app.get('/api/questions', async(request, response)=>{
+    try{
+        const re = await db.getQuestions();
+        response.send(re.data)
+    } catch(err){
+        console.log(err)
+    }
+})
+app.post('/api/questions', async(request, response)=>{
+    try{
+        await db.removeQuestion(question);
+        response.send('success')
+    } catch(err){
+        console.log(err)
+    }
+})
 const PORT = 3001
 app.listen(PORT)
 console.log(`Server running on port ${PORT}`)

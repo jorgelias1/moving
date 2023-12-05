@@ -62,6 +62,15 @@ const getAppt=async()=>{
     const re = await pool.query(query);
     return re;
 }
+const getQuestions=async()=>{
+    const query='SELECT * FROM questions'
+    const re = await pool.query(query);
+    return re;
+}
+const removeQuestion=async(question)=>{
+    const query='DELETE FROM questions WHERE question=$1 AND number=$2'
+    await pool.query(query, [question.question, question.number])
+}
 // const addUser=async()=>{
 
 // }
@@ -74,4 +83,6 @@ module.exports = {
     postQuestion,
     postAppt,
     getAppt,
+    getQuestions,
+    removeQuestion,
 }
