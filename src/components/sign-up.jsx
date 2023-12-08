@@ -47,7 +47,6 @@ export const SignUpForm=()=>{
     return(
     <div className='all'>
       <form onSubmit={handleSignUp} className='form'>
-  
         <label>
           Email: <input type='email' value={email} 
           onChange={e=>setEmail(e.target.value)}

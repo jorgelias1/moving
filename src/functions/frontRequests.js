@@ -1,5 +1,5 @@
 import axios from 'axios'
-const baseUrl = 'http://localhost:3001'
+const baseUrl = 'https://yk5xffr9zk.execute-api.us-west-1.amazonaws.com/dev'
 
 const calcDistance=(A, B)=>{
     return axios.post(`${baseUrl}/api/distance`, {A, B})

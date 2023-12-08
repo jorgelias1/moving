@@ -1,0 +1,14 @@
+service: moving-s
+
+provider:
+  name: aws
+  region: us-west-1
+  runtime: nodejs18.x
+
+functions:
+  expressAppFunction:
+    handler: index.handler
+    events:
+      - http:
+          path: /{proxy+}
+          method: ANY

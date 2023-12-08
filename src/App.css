@@ -3,6 +3,10 @@
   max-width: 100vw;
   background: var(--main-bg);
 }
+.logo{
+  width: 3rem;
+  height: 3rem;
+}
 .header {
   position: sticky;
   top: 0;
@@ -94,9 +98,6 @@
 }
 .morphTop{
   animation: morphTop 2s ease-in;
-}
-.morphMiddle{
-  /* opacity: 0; */
 }
 .morphBottom{
   animation: morphBottom 2s ease-in;
@@ -305,7 +306,7 @@ h2{
   align-items:center;
 }
 .selectCard div{
-  background: rgb(104, 127, 189);
+  background: rgb(90, 126, 225);
   color: white;
   border-radius: 1rem 0 0 1rem;
 }
@@ -353,13 +354,13 @@ h2{
   align-items: center;
 }
 .nextButton:hover{
-  scale: 1.2;
+  /* scale: 1.2; */
   transition: 0.25s;
 }
 .flipped{
   transform: scaleX(-1);
 }
-form{
+form, .estimate{
   background-color: white;
   padding: 0.5rem;
   border-radius: 1rem;
@@ -367,19 +368,31 @@ form{
   color: black;
   max-width: 40rem;
 }
-form input, textarea, select{
+.flexH form{
+  min-width: 40vw;
+}
+form input, textarea, select, .addressContainer>input{
   padding:1rem;
   background: rgb(239, 243, 247);
   color: black;
   border-radius: 0.5rem;
   border:2px solid black;
-  width:90%;
+  width:89%;
   font-size: 100%;
   min-height: 1.5rem;
   font-family: Inter, system-ui, Avenir, Helvetica, Arial, sans-serif;
 }
 .addressContainer{
   width: 100%;
+  display: flex;
+  justify-content: flex-start;
+  flex-direction: column;
+}
+/* .flexH form input:not(.addressContainer>input), select{
+  margin-left: 1%;
+} */
+select{
+  max-width: 33rem;
 }
 .map{
   width:90vw;
@@ -452,10 +465,12 @@ label{
 .mainCard:not(:nth-child(2)) img{
   height: 9vw;
   width: 15vw;
+  max-width: 80%;
 }
 .mainCard:nth-child(2) img{
   height: 18vw;
   width: 30vw;
+  width: 100%;
 }
 .mainCard div:nth-child(2){
   font-size: large;
@@ -493,17 +508,15 @@ label{
 }
 @keyframes car{
   0% {
-    /* transform: translateY(1rem); */
-    scale: 0.4;
+    /* opacity: 0.2; */
+    width: 40%;
   }
   50% {
-    /* transform: translateY(0.5rem); */
-    scale: 1.06;
+    width: 106%;
   }
   100% {
-    /* transform: translateY(0rem); */
-    /* height:100%; */
-    scale: 1;
+    width: 100%;
+    /* opacity: 1; */
   }
 }
 .swipe{
@@ -517,17 +530,17 @@ label{
   justify-content: center;
   background: linear-gradient(to right, rgb(122, 209, 255), rgb(128, 180, 230) 50%);
   border-radius: 1rem;
-  
+  margin: 0rem 2rem -2rem 2rem;
   /* background: linear-gradient(to bottom, white, black); */
 }
 @media (max-width:50rem){
   .mainContainer{
     flex-direction: column;
-    width:88vw;
+    width:95vw;
     background: transparent;
   }
   .carouselParent{
-    margin-top: -1rem;
+    margin-top: -0.5rem;
   }
   .mainCard:not(:nth-child(2)){
     width: 16vw;
@@ -539,8 +552,32 @@ label{
     display: none;
   }
   .description{
-    margin-bottom: 1rem;
-    width: 80vw;
+    width: 90vw;
+    margin-top: -0.5rem;
+  }
+}
+@media(max-width:72rem){
+  .estimate{
+    visibility: hidden;
+    flex: 0;
+    margin: 0;
+    padding: 0;
+  }
+  .flexH form{
+    width: 90vw;
+    margin-right: 5.5rem;
+  }
+  .image::after{
+    background: linear-gradient(to top, rgba(255, 255, 255, 0) 85%, rgba(131, 192, 236, 0.937));
+  }
+}
+@media(min-width:72rem){
+  .mainText{
+    margin-right: -8rem;
+    z-index: 3;  
+  }
+  .flexH form{
+    border-radius: 0 1rem 1rem 0;
   }
 }
 @media (min-width:50rem){
@@ -551,14 +588,11 @@ label{
     width: 12vw;
     height: 7vw;
   }
-  .mainCard:nth-child(2){
-    
-  }
   .carouselParent .flexH:nth-child(1){
     padding: 1rem;
   }
   .carouselParent{
-    margin-top: -2rem;
+    margin-top: -1rem;
     scale: 1.1;
     margin-bottom: 1rem;
   }
@@ -569,10 +603,6 @@ label{
     margin-top: -1rem;
     z-index: 2;
   }
-  .mainText{
-    margin-right: -8rem;
-    z-index: 3;  
-  }
   .flexH{
     background: transparent;
   }
@@ -580,12 +610,34 @@ label{
     margin-left: 1rem;
     padding-bottom: 1.5rem;
   }
-  /* .mainContainer{
-    padding: 1;
-  } */
 }
-.carPrice{
-  
+.estimate{
+  width:40vw;
+  max-width: 20rem;
+  margin-left: 1rem;
+  align-self: stretch;
+  border-radius: 1rem 0 0 1rem;
+  background-image: 
+  radial-gradient(circle 120px at 50% 48%, rgba(92, 133, 255, 0.512) 100px, rgba(65, 109, 255, 0.312) 6px, transparent),
+  radial-gradient(circle 80px at 90% 20%, rgba(92, 133, 255, 0.512) 70px, rgba(65, 109, 255, 0.312) 6px, transparent),
+  radial-gradient(circle 60px at 95% 58%, rgba(92, 133, 255, 0.512) 53px, rgba(65, 109, 255, 0.312) 4px, transparent),
+  conic-gradient(
+    from 40deg at -34px 40px,
+    rgb(105, 165, 253),
+    rgb(90, 126, 225),
+    rgb(41, 73, 179),
+    rgb(163, 201, 232)
+  );
+  display:flex;
+  align-items: center;
+  justify-content: center;
+  flex-direction: column;
+  color: white;
+  font-size: large;
+  font-weight: 800;
+}
+.estimate .material-symbols-outlined{
+  scale: 4;
 }
 ol{
   padding: 0;
@@ -688,7 +740,7 @@ label{
   flex-direction: column;
   align-items: center;
   color: black;
-  /* align-items: flex-start; */
+  align-items: flex-start;
 }
 label span, legend{
   font-size: 1.2rem;
@@ -708,7 +760,6 @@ fieldset{
   border: none;
 }
 .pricing{
-  padding: 1rem;
   display: flex;
 }
 .select li{
@@ -719,22 +770,10 @@ fieldset{
 .select{
   display: flex;
 }
-/* .select>div>div{
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  height: 100%;
-  border: 2px solid #6b8df3;
-  border-radius: 0.5rem;
-} */
 
 select{
   width: 100%;
 }
-/* .formSection{
-  border-left: 2px solid grey;
-  border-right: 2px solid grey;
-} */
 .hidden{
   display: none;
 }
@@ -757,7 +796,8 @@ select{
   font-weight: 700;
 }
 .currentNum{
-  background: #a5eceb;
+  background: #98b7ff;
+  color: rgb(0, 0, 0);
 }
 .backBtn{
   transform: scaleX(-1);
@@ -795,4 +835,12 @@ select{
 }
 button[type='submit']{
   width: 30%;
+}
+.reviewImg{
+  width: 20vw;
+  max-width: 10rem;
+}
+.stars{
+  margin-top: -4rem;
+  margin-bottom: -2rem;
 }

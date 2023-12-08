@@ -5,14 +5,14 @@ require('dotenv').config()
 const service = require('./services/axiosRequests.js')
 const AWS = require('aws-sdk');
 const db = require('./db.js')
+const awsServerlessExpress = require('aws-serverless-express')
 
 AWS.config.update({
   accessKeyId: process.env.ACCESSKEYID,
   secretAccessKey: process.env.SECRETACCESSKEY,
   region: 'us-west-1',
 });
-
-app.use(cors())
+app.use(cors({origin:'https://envir.d393044i9spbrh.amplifyapp.com'}))
 app.use(express.json())
 
 app.get('/api/places', async(request, response)=>{
@@ -116,6 +116,10 @@ app.post('/api/questions', async(request, response)=>{
         console.log(err)
     }
 })
-const PORT = 3001
-app.listen(PORT)
-console.log(`Server running on port ${PORT}`)
+const server = awsServerlessExpress.createServer(app);
+exports.handler = (event, context) => {
+  awsServerlessExpress.proxy(server, event, context);
+}
+// const PORT = 3001
+// app.listen(PORT)
+// console.log(`Server running on port ${PORT}`)
